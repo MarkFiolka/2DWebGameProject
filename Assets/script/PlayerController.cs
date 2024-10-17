@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+<<<<<<< HEAD
         
         Vector3 mousePos = Input.mousePosition;
         
@@ -33,6 +34,18 @@ public class PlayerController : MonoBehaviour
 
         player.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90));
 
+=======
+        Vector3 mousePos = Input.mousePosition;
+
+        mousePos = cam.ScreenToWorldPoint(mousePos);
+
+        Vector3 direction = mousePos - transform.position;
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90));
+        
+>>>>>>> f11f41b3f002c13f8ed68ef55c8b4816e577c988
         isMoving = false;
         
         if (Input.GetKey(KeyCode.W))
@@ -55,12 +68,20 @@ public class PlayerController : MonoBehaviour
             velocity += new Vector3(-moveSpeed * Time.deltaTime, 0, 0);
             isMoving = true;
         }
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> f11f41b3f002c13f8ed68ef55c8b4816e577c988
         if (velocity.magnitude > maxSpeed)
         {
             velocity = velocity.normalized * maxSpeed;
         }
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> f11f41b3f002c13f8ed68ef55c8b4816e577c988
         if (!isMoving)
         {
             velocity = Vector3.MoveTowards(velocity, Vector3.zero, decelerationRate * Time.deltaTime);
@@ -70,7 +91,11 @@ public class PlayerController : MonoBehaviour
             }
         }
         
+<<<<<<< HEAD
         GameObject userDev = player.transform.parent.gameObject;
         userDev.transform.position += velocity * Time.deltaTime;
+=======
+        player.transform.position += velocity * Time.deltaTime;
+>>>>>>> f11f41b3f002c13f8ed68ef55c8b4816e577c988
     }
 }
