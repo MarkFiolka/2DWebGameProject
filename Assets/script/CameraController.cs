@@ -4,17 +4,17 @@ using UnityEngine;
 
 public class CamaraCOntroller : MonoBehaviour
 {
-    public GameObject playerPos;
+    private GameObject playerPos;
     
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerPos = GameObject.FindGameObjectWithTag("userDev");
     }
 
     // Update is called once per frame
     void Update()
     {
-        transform.position = new Vector3(playerPos.transform.position.x, playerPos.transform.position.y, 0);
+        playerPos.transform.position = new Vector3(playerPos.transform.position.x, playerPos.transform.position.y, 0);
     }
 }

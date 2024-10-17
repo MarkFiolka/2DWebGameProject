@@ -1,38 +1,40 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public GameObject player;
+    private GameObject player;
     public float moveSpeed;
     public float stopThreshold;
     public float decelerationRate;
     public float maxSpeed;
-    public Camera cam;
+    private Camera camDev;
 
     private Vector3 velocity = Vector3.zero;
     private bool isMoving = false;
 
+    void Start()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+        camDev = GameObject.FindGameObjectWithTag("camDev").GetComponent<Camera>();
+    }
+
     void Update()
     {
-        // Get the mouse position in screen coordinates
+        
         Vector3 mousePos = Input.mousePosition;
-
-        // Convert the mouse position to world position
-        mousePos = cam.ScreenToWorldPoint(mousePos);
-
-        // Calculate the direction from the player to the mouse position
-        Vector3 direction = mousePos - transform.position;
-
-        // Calculate the angle in radians, then convert to degrees
+        
+        Vector3 worldMousePos = camDev.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDev.transform.position.z * -1));
+        
+        Vector3 direction = worldMousePos - player.transform.position;
+        
+        direction.z = 0;
+        
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        // Apply rotation to the player
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90));
-        
+        player.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90));
+
         isMoving = false;
         
-        // Handle input and apply movement force
         if (Input.GetKey(KeyCode.W))
         {
             velocity += new Vector3(0, moveSpeed * Time.deltaTime, 0);
@@ -53,14 +55,12 @@ public class PlayerController : MonoBehaviour
             velocity += new Vector3(-moveSpeed * Time.deltaTime, 0, 0);
             isMoving = true;
         }
-
-        // Cap the velocity to maxSpeed
+        
         if (velocity.magnitude > maxSpeed)
         {
             velocity = velocity.normalized * maxSpeed;
         }
-
-        // Apply deceleration if no input
+        
         if (!isMoving)
         {
             velocity = Vector3.MoveTowards(velocity, Vector3.zero, decelerationRate * Time.deltaTime);
@@ -69,8 +69,8 @@ public class PlayerController : MonoBehaviour
                 velocity = Vector3.zero;
             }
         }
-
-        // Apply movement to the player
-        player.transform.position += velocity * Time.deltaTime;
+        
+        GameObject userDev = player.transform.parent.gameObject;
+        userDev.transform.position += velocity * Time.deltaTime;
     }
 }
