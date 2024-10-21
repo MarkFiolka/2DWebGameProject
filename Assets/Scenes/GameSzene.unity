@@ -154,8 +154,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   userDev: {fileID: 1909483928}
   playerDev: {fileID: 1115199998987758217, guid: 03615bc87c281fe4d9e4e4cbfbbb561c, type: 3}
-  weaponDev: {fileID: 5030509291990390410, guid: dfef6bc5ffc369f4a8db85a6b6a47514, type: 3}
-  backpackDev: {fileID: 7916883756489878675, guid: 0099280a8d2b0ec46a75d33c2b1160e9, type: 3}
   cameraDev: {fileID: 7969635444132839542, guid: 9fab97d4c73168a4e86716da9da89dc8, type: 3}
   obj: {fileID: 8836607908343501217, guid: 3af521dbefed20b45b9877afe6987d52, type: 3}
 --- !u!4 &19675805

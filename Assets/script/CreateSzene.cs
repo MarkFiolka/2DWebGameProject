@@ -6,12 +6,11 @@ public class CreateSzene : MonoBehaviour
 {
     public GameObject userDev;
     public GameObject playerDev;
-    public GameObject weaponDev;
-    public GameObject backpackDev;
     public GameObject cameraDev;
 
-    private int szeneObjects = 100;
+    private int szeneObjects = 50;
     public GameObject obj;
+    
     private int count = 1;
     
     // Start is called before the first frame update
@@ -21,11 +20,7 @@ public class CreateSzene : MonoBehaviour
         newCameraDev.transform.parent = userDev.transform;
         GameObject newPlayerDev = Instantiate(playerDev);
         newPlayerDev.transform.parent = userDev.transform;
-        GameObject newWeaponDev = Instantiate(weaponDev);
-        newWeaponDev.transform.parent = newPlayerDev.transform;
-        GameObject newBackpackDev = Instantiate(backpackDev);
-        newBackpackDev.transform.parent = newPlayerDev.transform;
-
+        
         for (int i = 0; i < szeneObjects; i++)
         {
             for (int j = 0; j < szeneObjects; j++)
@@ -34,6 +29,6 @@ public class CreateSzene : MonoBehaviour
                 Debug.unityLogger.Log(count + " objects spawned");
                 count++;
             }
-        }
+        } 
     }
 }

@@ -6,6 +6,8 @@ TagManager:
   tags:
   - userDev
   - camDev
+  - shield
+  - backpack
   layers:
   - Default
   - TransparentFX
