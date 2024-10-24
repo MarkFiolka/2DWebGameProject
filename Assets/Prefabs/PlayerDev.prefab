@@ -122,9 +122,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponR:
-  - {fileID: 5030509291990390410, guid: dfef6bc5ffc369f4a8db85a6b6a47514, type: 3}
+  - {fileID: 1199923960625116467, guid: 27917b373b9c30a4db553273fce01b6a, type: 3}
+  - {fileID: 8285020959749209123, guid: a3289638e88450d44a801152ecbfac74, type: 3}
   weaponL:
-  - {fileID: 5030509291990390410, guid: dfef6bc5ffc369f4a8db85a6b6a47514, type: 3}
+  - {fileID: 1199923960625116467, guid: 27917b373b9c30a4db553273fce01b6a, type: 3}
+  - {fileID: 8285020959749209123, guid: a3289638e88450d44a801152ecbfac74, type: 3}
   weaponD:
   - {fileID: 0}
   backpackD: {fileID: 7916883756489878675, guid: 0099280a8d2b0ec46a75d33c2b1160e9, type: 3}
@@ -283,13 +285,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4866315915515672908}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: -1, w: 0}
   m_LocalPosition: {x: 0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8772240169377809620}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
 --- !u!1 &6079664332761819861
 GameObject:
   m_ObjectHideFlags: 0

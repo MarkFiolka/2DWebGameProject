@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Color Palette - Dark Mode</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .color-section {
+            margin-bottom: 40px;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        .color-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .color-box:hover {
+            transform: scale(1.1);
+        }
+        .tooltip {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .color-box:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="color-section">
+        <h2>Shotgun 🔫</h2>
+        <div class="color-grid">
+
+            <div class="color-box" style="background-color: #3c3c3c;">
+                <div class="tooltip">Barrel1<br>#3c3c3c</div>
+            </div>
+
+            <div class="color-box" style="background-color: #313131;">
+                <div class="tooltip">Barrel2<br>#313131</div>
+            </div>
+
+            <div class="color-box" style="background-color: #bb792f;">
+                <div class="tooltip">Wood1<br>#bb792f</div>
+            </div>
+
+            <div class="color-box" style="background-color: #d49045;">
+                <div class="tooltip">Wood2<br>#d49045</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="color-section">
+        <h2>Shield 🛡️</h2>
+        <div class="color-grid">
+
+            <div class="color-box" style="background-color: #434343;">
+                <div class="tooltip">Metal1<br>#434343</div>
+            </div>
+
+            <div class="color-box" style="background-color: #292929;">
+                <div class="tooltip">Metal2<br>#434343</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="color-section">
+        <h2>Ability sample 💪</h2>
+        <div class="color-grid">
+
+            <div class="color-box" style="background-color: #ffffff;">s
+                <div class="tooltip">Name<br>#ffffff</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
