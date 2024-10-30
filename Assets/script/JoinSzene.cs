@@ -23,7 +23,6 @@ public class JoinSzene : MonoBehaviour
     {
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
 
-        // Wait until the scene is fully loaded
         while (!asyncLoad.isDone)
         {
             yield return null;

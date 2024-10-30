@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private GameObject player;   // Assign via inspector
-    [SerializeField] private Camera camDev;       // Assign via inspector
+    [SerializeField] private GameObject player;
+    [SerializeField] private Camera camDev;
     public float moveSpeed;
     public float stopThreshold;
     public float decelerationRate;
@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
 
         if (camDev == null)
         {
-            camDev = GameObject.FindGameObjectWithTag("camDev").GetComponent<Camera>();
+            camDev = Camera.main;
         }
 
         playerTransform = player.transform;

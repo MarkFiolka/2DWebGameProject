@@ -8,6 +8,7 @@ TagManager:
   - camDev
   - shield
   - backpack
+  - Cursor
   layers:
   - Default
   - TransparentFX
