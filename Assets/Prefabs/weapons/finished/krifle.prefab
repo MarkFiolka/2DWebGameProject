@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6691256832633206916}
   - component: {fileID: 7971968705851359060}
+  - component: {fileID: -8444939193048797076}
   m_Layer: 0
   m_Name: krifle
   m_TagString: Untagged
@@ -84,3 +85,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-8444939193048797076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111374575607406041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1966d931515972b4f8641af77ad24f5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 7009882748211851390, guid: a42afd295a303f64186d25408428ba3d, type: 3}

@@ -98,6 +98,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 7009882748211851390, guid: a42afd295a303f64186d25408428ba3d, type: 3}
-  bulletForce: 10
-  lifetime: 3
+  slowdownValue: 0.95
+  recoil: 0
   cooldown: 0
+  lifetime: 0
+  bulletForce: 0
+  spread: 0

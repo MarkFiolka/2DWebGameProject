@@ -1,90 +1,84 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
-    [SerializeField] private GameObject player;
-    [SerializeField] private Camera camDev;
-    public float moveSpeed;
-    public float stopThreshold;
-    public float decelerationRate;
-    public float maxSpeed;
+    [SerializeField] private float speed = 1f;
+    [SerializeField] private float rotationSpeed = 360f;
 
-    private Transform playerTransform;
-    private Transform userDevTransform;
+    private Rigidbody2D rb;
+    private Vector2 inputDirection;
 
-    private Vector3 velocity = Vector3.zero;
-    private bool isMoving = false;
+    private NetworkVariable<float> networkedRotation = new NetworkVariable<float>(
+        default,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
-    void Start()
+    private void Awake()
     {
-        if (player == null)
-        {
-            player = GameObject.FindGameObjectWithTag("Player");
-        }
-
-        if (camDev == null)
-        {
-            camDev = Camera.main;
-        }
-
-        playerTransform = player.transform;
-        userDevTransform = playerTransform.parent;
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        RotatePlayerTowardsMouse();
-
-        HandleMovement();
+        if (IsOwner)
+        {
+            ProcessInput();
+            RequestMoveServerRpc(inputDirection);
+            UpdateRotation();
+        }
+        else
+        {
+            InterpolateRotation();
+        }
     }
 
-    private void RotatePlayerTowardsMouse()
+    private void ProcessInput()
     {
-        Vector3 mousePos = Input.mousePosition;
-        Vector3 worldMousePos = camDev.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDev.nearClipPlane));
+        inputDirection = Vector2.zero;
 
-        Vector3 direction = (worldMousePos - playerTransform.position);
-        direction.z = 0;
+        if (Input.GetKey(KeyCode.W)) inputDirection += Vector2.up;
+        if (Input.GetKey(KeyCode.S)) inputDirection += Vector2.down;
+        if (Input.GetKey(KeyCode.A)) inputDirection += Vector2.left;
+        if (Input.GetKey(KeyCode.D)) inputDirection += Vector2.right;
 
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-        playerTransform.rotation = Quaternion.Euler(0, 0, angle - 90);
+        inputDirection.Normalize();
     }
 
-    private void HandleMovement()
+    [ServerRpc]
+    private void RequestMoveServerRpc(Vector2 direction)
     {
-        isMoving = false;
-
-        Vector3 inputDirection = new Vector3(
-            Input.GetKey(KeyCode.D) ? 1 : (Input.GetKey(KeyCode.A) ? -1 : 0),
-            Input.GetKey(KeyCode.W) ? 1 : (Input.GetKey(KeyCode.S) ? -1 : 0),
-            0
-        ).normalized;
-
-        if (inputDirection != Vector3.zero)
+        if (!IsServer || direction.magnitude == 0)
         {
-            velocity += inputDirection * moveSpeed * Time.deltaTime;
-            isMoving = true;
+            rb.velocity = Vector2.zero;
+            return;
         }
 
-        // Limit velocity to max speed
-        if (velocity.magnitude > maxSpeed)
-        {
-            velocity = velocity.normalized * maxSpeed;
-        }
+        Vector2 newPosition = rb.position + direction * speed * Time.fixedDeltaTime;
+        rb.MovePosition(newPosition);
+    }
 
-        // Deceleration when not moving
-        if (!isMoving)
-        {
-            velocity = Vector3.MoveTowards(velocity, Vector3.zero, decelerationRate * Time.deltaTime);
+    private void UpdateRotation()
+    {
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 directionToMouse = (mousePosition - transform.position).normalized;
+        float targetAngle = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg + -90f;
 
-            if (velocity.magnitude < stopThreshold)
-            {
-                velocity = Vector3.zero;
-            }
-        }
+        float smoothAngle = Mathf.LerpAngle(transform.eulerAngles.z, targetAngle, rotationSpeed);
+        transform.rotation = Quaternion.Euler(0, 0, smoothAngle);
 
-        // Apply movement to userDev
-        userDevTransform.position += velocity * Time.deltaTime;
+        UpdateRotationServerRpc(smoothAngle);
+    }
+
+    [ServerRpc]
+    private void UpdateRotationServerRpc(float rotation)
+    {
+        networkedRotation.Value = rotation;
+    }
+
+    private void InterpolateRotation()
+    {
+        float smoothRotation = Mathf.LerpAngle(transform.eulerAngles.z, networkedRotation.Value, rotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(0, 0, smoothRotation);
     }
 }

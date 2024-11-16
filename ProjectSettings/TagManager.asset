@@ -9,6 +9,8 @@ TagManager:
   - shield
   - backpack
   - Cursor
+  - right
+  - left
   layers:
   - Default
   - TransparentFX
