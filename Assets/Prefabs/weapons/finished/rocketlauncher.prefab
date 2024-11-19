@@ -98,3 +98,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rocketPrefab: {fileID: 7009882748211851390, guid: a42afd295a303f64186d25408428ba3d, type: 3}
+  weaponNameBase: RocketLauncher

@@ -11,6 +11,7 @@ TagManager:
   - Cursor
   - right
   - left
+  - bullet
   layers:
   - Default
   - TransparentFX

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(changeweapons))]
+//[CustomEditor(typeof(changeweapons))]
 public class ChangeWeaponsEditor : Editor
 {
     /*public override void OnInspectorGUI()
