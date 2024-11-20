@@ -9,7 +9,14 @@
 [Aa]ssets/[Ss]treamingAssets/aa.meta
 [Aa]ssets/[Ss]treamingAssets/aa/*
 
-# Visual Studio / JetBrains Rider / IDE files
+# Ignore all .meta files except inside the Assets folder
+*.meta
+!Assets/**/*.meta
+
+# Unity Addressables
+/AddressableAssetsData/*/*.bin*
+
+# Unity Visual Studio / JetBrains Rider / IDE files
 .vs/
 *.csproj
 *.unityproj
@@ -21,6 +28,9 @@
 *.pidb
 *.opendb
 *.VC.db
+
+# Unity Asset Store Tools
+/Assets/AssetStoreTools*
 
 # Crashlytics
 crashlytics-build.properties
@@ -67,14 +77,63 @@ version.txt.meta
 THIRD-PARTY-NOTICES
 THIRD-PARTY-NOTICES.meta
 
-# Editor-specific
+# Editor-specific files
 Editor.meta
 EditorBuildSettings.asset
 
-# Specific filenames from the list
+# Other unnecessary files
 account-management.ps1
 account-management.ps1.meta
 install.ps1
 uninstall.ps1
+useSharedDesignerContext.txt
+useSharedDesignerContext.txt.meta
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Rider-specific files
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+
+# Packed Addressables
+[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Unity Collaborate files
+/[Cc]ollab/
+
+# Miscellaneous Unity files
+sysinfo.txt
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Ignore any empty directories
+_._.meta
+
+# Ignore common library paths
+lib/
+lib.meta
+
+# Generated icons
+Icon.png
+Icon.png.meta
+defaultIcon.png
+defaultIcon.png.meta
+
+# Licensing and third-party
+LICENSE.TXT
+LICENSE.TXT.meta
+COPYING.txt
+COPYING.txt.meta
+
+# Build tools
+*.targets
+*.targets.meta
 useSharedDesignerContext.txt
 useSharedDesignerContext.txt.meta
