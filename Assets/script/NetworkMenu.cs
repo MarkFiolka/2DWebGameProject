@@ -6,7 +6,6 @@ using Unity.Netcode;
 
 public class NetworkMenu  : MonoBehaviour
 {
-    
     void Start()
     {
         Screen.fullScreenMode = FullScreenMode.Windowed;
