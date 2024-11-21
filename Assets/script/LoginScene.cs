@@ -2,7 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 
-public class LoginSceneManager : MonoBehaviour
+public class LoginScene : MonoBehaviour
 {
     [SerializeField] private TMP_InputField userNameInputText;
     [SerializeField] private TMP_InputField passwordInputText;
@@ -75,6 +75,6 @@ public class LoginSceneManager : MonoBehaviour
         }
 
         Debug.Log($"Connecting to DB with Username: {userName} and Password: {password}");
-        db.ConnectToDatabase(userName, password);
+        db.InitialiseDatabase(userName, password);
     }
 }
