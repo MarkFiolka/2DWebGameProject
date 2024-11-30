@@ -10,7 +10,7 @@ public class NetworkMenu  : MonoBehaviour
     {
         Screen.fullScreenMode = FullScreenMode.Windowed;
 
-        Screen.SetResolution(250, 250, false);
+        Screen.SetResolution(1920/2, 1080/2, false);
     }
     
     public void Update()
@@ -34,22 +34,3 @@ public class NetworkMenu  : MonoBehaviour
         }
     }
 }
-
-
-/*[SerializeField] private bool isServer = false; // Set this to true for server, false for client
-
-private void Start()
-{
-    Screen.fullScreenMode = FullScreenMode.Windowed;
-    Screen.SetResolution(250, 250, false);
-
-    // Automatically start as a server or client based on the boolean
-    if (isServer)
-    {
-        NetworkManager.Singleton.StartServer();
-    }
-    else
-    {
-        NetworkManager.Singleton.StartClient();
-    }
-}*/

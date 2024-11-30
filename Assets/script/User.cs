@@ -5,14 +5,16 @@ public class User
     public string Name { get; }
     public string PasswordHash { get; }
     public int Aether { get; }
+    public bool IsOnline { get; private set; }
 
     public User(string name, string passwordHash, int aether)
     {
         Name = name;
         PasswordHash = passwordHash;
         Aether = aether;
+        IsOnline = false;
         
-        Log.Write($"player data is {Name} with Ae {aether}");
+        Log.Write($"Player data is {Name} with Ae {aether}");
     }
 
     public override string ToString()
@@ -24,13 +26,20 @@ public class User
     {
         return new BsonDocument
         {
-            { "user", new BsonDocument
+            {
+                "user", new BsonDocument
                 {
                     { "name", Name },
                     { "passwordHash", PasswordHash },
-                    { "aether", Aether }
+                    { "aether", Aether },
+                    { "isOnline", IsOnline }
                 }
             }
         };
+    }
+
+    public void SetOnlineStatus(bool status)
+    {
+        IsOnline = status;
     }
 }
