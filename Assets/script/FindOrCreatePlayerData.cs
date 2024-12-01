@@ -7,24 +7,33 @@ public static class FindOrCreatePlayerData
 {
     public static async Task<User> FindPlayerByUsername(IMongoCollection<BsonDocument> collection, string username)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
-        var result = await collection.Find(filter).FirstOrDefaultAsync();
-
-        if (result != null)
+        try
         {
-            Log.Write($"User '{username}' found in the database.");
-            var userDocument = result["user"].AsBsonDocument;
-            return new User(
-                userDocument["name"].AsString,
-                userDocument["passwordHash"].AsString,
-                userDocument["aether"].AsInt32
-            );
+            var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
+            var result = await collection.Find(filter).FirstOrDefaultAsync();
+
+            if (result != null)
+            {
+                Log.Write($"Raw result from database: {result.ToJson()}");
+
+                var userDocument = result["user"].AsBsonDocument;
+                return new User(
+                    userDocument["name"].AsString,
+                    userDocument["passwordHash"].AsString,
+                    userDocument["aether"].AsInt32,
+                    userDocument.GetValue("isOnline", false).AsBoolean
+                );
+            }
+
+            Log.Write($"User '{username}' not found in the database.");
+            return null;
         }
-
-        Log.Write($"User '{username}' not found in the database.");
-        return null;
+        catch (Exception ex)
+        {
+            Log.Write($"Error finding user '{username}': {ex.Message}");
+            return null;
+        }
     }
-
 
     public static async Task CreatePlayer(IMongoCollection<BsonDocument> collection, User newUser)
     {
@@ -35,45 +44,36 @@ public static class FindOrCreatePlayerData
             throw new InvalidOperationException($"A user with the name '{newUser.Name}' already exists.");
         }
 
-        newUser.SetOnlineStatus(true);
+        newUser.SetOnlineStatus(false);
 
         var bsonDocument = newUser.ToBsonDocument();
-
         await collection.InsertOneAsync(bsonDocument);
-        Log.Write($"New user '{newUser.Name}' created successfully and set to online.");
+        Log.Write($"New user '{newUser.Name}' created successfully and set to offline.");
     }
-
-
-    public static async Task<bool> IsPlayerOnline(IMongoCollection<BsonDocument> collection, string username)
-    {
-        var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
-        var player = await collection.Find(filter).FirstOrDefaultAsync();
-
-        if (player != null && player.Contains("user") && player["user"].AsBsonDocument.Contains("isOnline"))
-        {
-            bool isOnline = player["user"]["isOnline"].AsBoolean;
-            Log.Write($"User '{username}' online status is: {isOnline}");
-            return isOnline;
-        }
-
-        Log.Write($"User '{username}' not found or missing 'isOnline' field.");
-        return false;
-    }
-
 
     public static async Task UpdatePlayerOnlineStatus(IMongoCollection<BsonDocument> collection, string username, bool isOnline)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
-        var update = Builders<BsonDocument>.Update.Set("user.isOnline", isOnline);
+        try
+        {
+            Log.Write($"Attempting to update online status for user '{username}' to {isOnline}.");
 
-        var result = await collection.UpdateOneAsync(filter, update);
-        if (result.ModifiedCount > 0)
-        {
-            Log.Write($"User '{username}' online status updated to {isOnline}.");
+            var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
+            var update = Builders<BsonDocument>.Update.Set("user.isOnline", isOnline);
+
+            var result = await collection.UpdateOneAsync(filter, update);
+
+            if (result.ModifiedCount > 0)
+            {
+                Log.Write($"User '{username}' online status updated to {isOnline}.");
+            }
+            else
+            {
+                Log.Write($"Failed to update online status for user '{username}'. Check if the user exists.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Log.Write($"Failed to update online status for user '{username}'. Check if the user exists.");
+            Log.Write($"Error updating online status for user '{username}': {ex.Message}");
         }
     }
 }

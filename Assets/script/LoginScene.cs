@@ -1,85 +1,162 @@
-using System;
-using TMPro;
 using UnityEngine;
+using TMPro;
+using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class LoginScene : MonoBehaviour
 {
     [SerializeField] private TMP_InputField userNameInputText;
     [SerializeField] private TMP_InputField passwordInputText;
-    [SerializeField] private DatabaseConnect dc;
     [SerializeField] private PopupPanel popupPanel;
 
-    private string userNameInput;
-    private string passwordInput;
+    private AuthenticationService _authService;
+    private PopupService _popupService;
+    private string _loggedInUsername;
 
     private void Start()
     {
-        if (dc == null)
-        {
-            dc = FindObjectOfType<DatabaseConnect>();
-            if (dc == null)
-            {
-                Debug.LogError("DatabaseManager not found!");
-            }
-        }
-
         if (popupPanel == null)
         {
-            popupPanel = FindObjectOfType<PopupPanel>();
-            if (popupPanel == null)
-            {
-                Debug.LogError("PopupPanel not found in the scene!");
-            }
+            Debug.LogError("PopupPanel is not assigned in the Inspector!");
+            return;
         }
+        
+        DontDestroyOnLoad(gameObject);
+
+        var databaseService = new DatabaseService();
+        databaseService.Initialize();
+
+        _authService = new AuthenticationService(databaseService);
+        _popupService = new PopupService(popupPanel);
     }
 
-    public void Login()
+    public async void Login()
     {
-        if (userNameInputText == null || passwordInputText == null)
+        string username = userNameInputText.text.Trim();
+        string password = passwordInputText.text.Trim();
+
+        // Validate input
+        if (string.IsNullOrWhiteSpace(username) || username.Length < 3)
         {
-            Debug.LogError("Input fields are not assigned in the Inspector!");
+            _popupService.ShowTimed("Username must have at least 3 characters.", 2f);
             return;
         }
 
-        AssignValues();
-
-        if (!ValidateInput())
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 5)
         {
-            Debug.LogWarning("Input validation failed. Please correct your input.");
+            _popupService.ShowTimed("Password must have at least 5 characters.", 2f);
             return;
         }
 
-        dc?.InitialiseDatabase(userNameInput, passwordInput);
+        var loginResult = await _authService.LoginAsync(username, password);
+
+        switch (loginResult)
+        {
+            case LoginResult.Success:
+                _loggedInUsername = username;
+                _popupService.ShowTimed("Login successful!", 2f);
+
+                ChangeScene("GameScene");
+                InstantiateSzene();
+                break;
+
+            case LoginResult.UserNotFound:
+                _popupService.ShowTimed("Username not registered. Would you like to create a new account?", 10f);
+                bool wantsToRegister = await ConfirmRegistration();
+
+                if (wantsToRegister)
+                {
+                    await Register(username, password);
+                }
+                break;
+
+            case LoginResult.InvalidCredentials:
+                _popupService.ShowTimed("Invalid username or password.", 2f);
+                break;
+
+            case LoginResult.UserAlreadyOnline:
+                _popupService.ShowTimed("This account is already logged in. Please try again later.", 3f);
+                break;
+        }
     }
 
-    private void AssignValues()
+    private bool _isExiting;
+
+    private void OnApplicationQuit()
     {
-        userNameInput = userNameInputText.text.Trim();
-        passwordInput = passwordInputText.text.Trim();
+        if (_isExiting) return;
+
+        _isExiting = true;
+
+        if (!string.IsNullOrEmpty(_loggedInUsername))
+        {
+            Task.Run(async () => await FindOrCreatePlayerData.UpdatePlayerOnlineStatus(
+                _authService.GetDatabaseService().GetPlayerCollection(),
+                _loggedInUsername,
+                false)).Wait();
+        }
     }
 
-    private bool ValidateInput()
+    private bool _isChangingScene = false;
+
+    public void ChangeScene(string sceneName)
     {
-        if (popupPanel == null)
-        {
-            Debug.LogError("PopupPanel is not assigned or found. Cannot display popup messages.");
-            return false;
-        }
+        _isChangingScene = true;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+    }
 
-        if (string.IsNullOrWhiteSpace(userNameInput) || userNameInput.Length < 3)
-        {
-            Log.Write("Username must have at least 3 characters.");
-            popupPanel.ShowPopup("Username must have at least 3 characters.");
-            return false;
-        }
+    private async void OnDestroy()
+    {
+        if (_isChangingScene) return;
 
-        if (string.IsNullOrWhiteSpace(passwordInput) || passwordInput.Length < 5)
+        if (!string.IsNullOrEmpty(_loggedInUsername))
         {
-            Log.Write("Password must have at least 5 characters.");
-            popupPanel.ShowPopup("Password must have at least 5 characters.");
-            return false;
+            await FindOrCreatePlayerData.UpdatePlayerOnlineStatus(
+                _authService.GetDatabaseService().GetPlayerCollection(),
+                _loggedInUsername,
+                false
+            );
+            Log.Write($"User '{_loggedInUsername}' set to offline during OnDestroy.");
         }
+    }
 
-        return true;
+    private async Task Logout(string username)
+    {
+        var playerCollection = _authService.GetDatabaseService().GetPlayerCollection();
+        await FindOrCreatePlayerData.UpdatePlayerOnlineStatus(playerCollection, username, false);
+        Log.Write($"User '{username}' logged out and set to offline.");
+    }
+
+    private Task<bool> ConfirmRegistration()
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+
+        _popupService.ShowWithButtons(
+            "Would you like to register this account?",
+            onYes: () =>
+            {
+                taskCompletionSource.SetResult(true);
+            },
+            onNo: () =>
+            {
+                _popupService.ShowTimed("You chose not to register.", 2f);
+                taskCompletionSource.SetResult(false);
+            },
+            timeout: 10f
+        );
+
+        return taskCompletionSource.Task;
+    }
+
+
+    private async Task Register(string username, string password)
+    {
+        var hashedPassword = PasswordUtility.HashPassword(password);
+        var newUser = new User(username, hashedPassword, 0, false);
+
+        var playerCollection = _authService.GetDatabaseService().GetPlayerCollection();
+        await FindOrCreatePlayerData.CreatePlayer(playerCollection, newUser);
+
+        _popupService.ShowTimed($"Account created successfully for {username}. You can now log in.", 2f);
     }
 }

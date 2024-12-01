@@ -7,7 +7,7 @@ public class User
     public int Aether { get; }
     public bool IsOnline { get; private set; }
 
-    public User(string name, string passwordHash, int aether)
+    public User(string name, string passwordHash, int aether, bool isOnline)
     {
         Name = name;
         PasswordHash = passwordHash;
