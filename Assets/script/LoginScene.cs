@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using TMPro;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ public class LoginScene : MonoBehaviour
     private AuthenticationService _authService;
     private PopupService _popupService;
     private string _loggedInUsername;
+    private GameSzene _gameSzene;
+    private User _user;
+    private PlayerMovement _playerMovement;
 
     private void Start()
     {
@@ -20,7 +24,7 @@ public class LoginScene : MonoBehaviour
             Debug.LogError("PopupPanel is not assigned in the Inspector!");
             return;
         }
-        
+
         DontDestroyOnLoad(gameObject);
 
         var databaseService = new DatabaseService();
@@ -35,7 +39,6 @@ public class LoginScene : MonoBehaviour
         string username = userNameInputText.text.Trim();
         string password = passwordInputText.text.Trim();
 
-        // Validate input
         if (string.IsNullOrWhiteSpace(username) || username.Length < 3)
         {
             _popupService.ShowTimed("Username must have at least 3 characters.", 2f);
@@ -56,8 +59,36 @@ public class LoginScene : MonoBehaviour
                 _loggedInUsername = username;
                 _popupService.ShowTimed("Login successful!", 2f);
 
-                ChangeScene("GameScene");
-                InstantiateSzene();
+                var databaseService = _authService.GetDatabaseService();
+                var playerCollection = databaseService.GetPlayerCollection();
+                var user = await FindOrCreatePlayerData.FindPlayerByUsername(playerCollection, username);
+
+                if (user == null)
+                {
+                    _popupService.ShowTimed("Error: User data not found.", 2f);
+                    return;
+                }
+
+                _user = user; // Cache the user object for later use
+                await ChangeSceneAsync("GameScene");
+
+                _gameSzene = FindObjectOfType<GameSzene>();
+                if (_gameSzene == null)
+                {
+                    Debug.LogError("GameSzene could not be found in the scene!");
+                    return;
+                }
+                _gameSzene.SetUser(user);
+                _gameSzene.InstantiateSzene();
+                
+                _playerMovement = FindObjectOfType<PlayerMovement>();
+                if (_playerMovement == null)
+                {
+                    Debug.LogError("PlayerMovement could not be found in the scene!");
+                    return;
+                }
+                _playerMovement.SetUser(user);
+                
                 break;
 
             case LoginResult.UserNotFound:
@@ -67,7 +98,9 @@ public class LoginScene : MonoBehaviour
                 if (wantsToRegister)
                 {
                     await Register(username, password);
+                    Login(); // Retry login after successful registration
                 }
+
                 break;
 
             case LoginResult.InvalidCredentials:
@@ -95,14 +128,40 @@ public class LoginScene : MonoBehaviour
                 _loggedInUsername,
                 false)).Wait();
         }
+
+        if (!string.IsNullOrEmpty(_loggedInUsername))
+        {
+            Task.Run(async () => await FindOrCreatePlayerData.UpdatePlayerPos(
+                _authService.GetDatabaseService().GetPlayerCollection(),
+                _loggedInUsername,
+                _user.PosX,
+                _user.PosY)).Wait();
+        }
     }
 
     private bool _isChangingScene = false;
 
-    public void ChangeScene(string sceneName)
+    public async Task ChangeSceneAsync(string sceneName)
     {
+        if (_isChangingScene)
+            return;
+
         _isChangingScene = true;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+        asyncLoad.allowSceneActivation = false;
+
+        while (!asyncLoad.isDone)
+        {
+            if (asyncLoad.progress >= 0.9f)
+            {
+                asyncLoad.allowSceneActivation = true;
+            }
+
+            await Task.Yield();
+        }
+
+        _isChangingScene = false;
     }
 
     private async void OnDestroy()
@@ -117,6 +176,15 @@ public class LoginScene : MonoBehaviour
                 false
             );
             Log.Write($"User '{_loggedInUsername}' set to offline during OnDestroy.");
+        }
+
+        if (!string.IsNullOrEmpty(_loggedInUsername))
+        {
+            Task.Run(async () => await FindOrCreatePlayerData.UpdatePlayerPos(
+                _authService.GetDatabaseService().GetPlayerCollection(),
+                _loggedInUsername,
+                _user.PosX,
+                _user.PosY)).Wait();
         }
     }
 
@@ -133,10 +201,7 @@ public class LoginScene : MonoBehaviour
 
         _popupService.ShowWithButtons(
             "Would you like to register this account?",
-            onYes: () =>
-            {
-                taskCompletionSource.SetResult(true);
-            },
+            onYes: () => { taskCompletionSource.SetResult(true); },
             onNo: () =>
             {
                 _popupService.ShowTimed("You chose not to register.", 2f);
@@ -152,11 +217,25 @@ public class LoginScene : MonoBehaviour
     private async Task Register(string username, string password)
     {
         var hashedPassword = PasswordUtility.HashPassword(password);
-        var newUser = new User(username, hashedPassword, 0, false);
+        var newUser = new User(username, 
+            hashedPassword, 
+            0, 
+            0, 
+            0, 
+            "Rifle", 
+            "Rifle",
+            false);
 
         var playerCollection = _authService.GetDatabaseService().GetPlayerCollection();
-        await FindOrCreatePlayerData.CreatePlayer(playerCollection, newUser);
-
-        _popupService.ShowTimed($"Account created successfully for {username}. You can now log in.", 2f);
+        try
+        {
+            await FindOrCreatePlayerData.CreatePlayer(playerCollection, newUser);
+            _popupService.ShowTimed($"Account created successfully for {username}. You can now log in.", 2f);
+        }
+        catch (Exception ex)
+        {
+            _popupService.ShowTimed($"Failed to create account: {ex.Message}", 2f);
+            Log.Write($"Error creating user '{username}': {ex.Message}");
+        }
     }
 }

@@ -21,6 +21,10 @@ public static class FindOrCreatePlayerData
                     userDocument["name"].AsString,
                     userDocument["passwordHash"].AsString,
                     userDocument["aether"].AsInt32,
+                    userDocument["posX"].AsInt32,
+                    userDocument["posY"].AsInt32,
+                    userDocument["weaponL"].AsString,
+                    userDocument["weaponR"].AsString,
                     userDocument.GetValue("isOnline", false).AsBoolean
                 );
             }
@@ -69,6 +73,35 @@ public static class FindOrCreatePlayerData
             else
             {
                 Log.Write($"Failed to update online status for user '{username}'. Check if the user exists.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"Error updating online status for user '{username}': {ex.Message}");
+        }
+    }
+
+    public static async Task UpdatePlayerPos(IMongoCollection<BsonDocument> collection, string username, int posX, int posY)
+    {
+        try
+        {
+            Log.Write($"Attempting to update position for user '{username}' to {posX} and position {posY}.");
+            
+            var filter = Builders<BsonDocument>.Filter.Eq("user.name", username);
+            
+            var updatePosX = Builders<BsonDocument>.Update.Set("user.posX", posX);
+            var updatePosY = Builders<BsonDocument>.Update.Set("user.posY", posY);
+            
+            var resultForPosX = await collection.UpdateOneAsync(filter, updatePosX);
+            var resultForPosY = await collection.UpdateOneAsync(filter, updatePosY);
+            
+            if (resultForPosX.ModifiedCount > 0 & resultForPosY.ModifiedCount > 0)
+            {
+                Log.Write($"Attempting to update position for user '{username}' to {posX} and position {posY}.");
+            }
+            else
+            {
+                Log.Write($"Failed to update Position of player for user '{username}'.");
             }
         }
         catch (Exception ex)
